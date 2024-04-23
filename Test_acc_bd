@@ -1,0 +1,31 @@
+#Ne pas oublier d'installer une première fois les deux packages suivants
+#install.packages("RMySQL")
+#install.packages("DBI")
+library(DBI)
+library(RMySQL)
+con <- DBI::dbConnect(
+  drv = RMySQL::MySQL(),    # database driver à utiliser
+  host = "localhost", 
+  port = 3306, 
+  # avec MAMP, si 3306 ne marche pas, essayer 8889 ou essayer le port qui est affiché sur myPHPadmin
+  username = "root", 
+  password = "",  #si ça ne marche pas, essayer de mettre "root"
+  #a priori il faut mettre "root" avec MAMP
+  dbname = "projet"
+  
+  
+  # nom de votre base, n'oubliez pas de rajouter une virgule si vous rajouter le paramètre unix.sock après
+  #si ça ne marche pas, il faut rajouter le lien vers le fichier
+  #mysql.sock. A priori, vous aurez besoin de faire ça avec MAMP 
+  #mais pas obligatoirement avec WAMP
+  #unix.sock = "/chemin/vers/fichier/mysql.sock"
+  #pour MAMP, essayer : 
+  #unix.sock = "chemin vers MAMP /MAMP/tmp/mysql/mysql.sock"
+  #typiquement, sous MAC, ça sera normalement
+  #unix.sock = "/Applications/MAMP/tmp/mysql/mysql.sock"
+)
+
+myresult <- dbGetQuery(con, "SELECT * FROM `games_cleannnn` WHERE games_cleannnn.Price = 9.99;")
+head(myresult)
+
+(myresult)
