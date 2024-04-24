@@ -12,6 +12,9 @@ library(RMySQL)
 library(moments)
 library(knitr)
 library(magrittr)
+install.packages("ggplot2")
+library(ggplot2)
+
 
 
 con <- DBI::dbConnect(
@@ -97,6 +100,24 @@ barplot(pourcentages, main = "Histogramme des pourcentages", xlab = "Pourcentage
 
 
 ```
+
+#ScoreMetacritic-mois-nbrJoueursMoyen:
+```{r}
+donneesMMscAvgnbr <- merge(statistique_data, jeu_data, by = "AppID")
+
+donneesMetacriticScore_groupees <- cut(donneesMMscAvgnbr$MetacriticScore, breaks = c(-Inf, 50, 75, 90, Inf), labels = c("<=50", "50-75", "75-90", ">90"))
+ggplot(donneesMMscAvgnbr, aes(x = Month, y = AvgPlayers, color = donneesMetacriticScore_groupees)) +
+  geom_point()  +
+  labs(x = "Mois", y = "Nombre moyen de joueurs",title = "Nuage de points représentant le nombre moyen des joueurs par mois par jeu et les score Metacritic des jeux" , color = "Score Metacritic") +
+  theme_minimal() +   theme(axis.text.x = element_blank() , plot.title = element_text(size = 9)) 
+
+
+```
+
+
+
+
+
 
 \*\* Les \## R Markdown
 
