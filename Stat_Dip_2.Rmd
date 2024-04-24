@@ -1,0 +1,115 @@
+---
+title: "Fichier Rmarkdown"
+output: 
+  pdf_document:
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(DBI)
+library(RMySQL)
+library(moments)
+library(knitr)
+library(magrittr)
+
+
+con <- DBI::dbConnect(
+  drv = RMySQL::MySQL(),
+  host = "localhost", 
+  port = 3306, 
+  username = "root", 
+  password = "", 
+  dbname = "projet"
+  
+)
+jeu_data <- dbGetQuery(con, "SELECT * FROM `jeu` ")
+statistique_data <- dbGetQuery(con, "SELECT * FROM `statistique` ")
+
+# Fonctions 
+var.pop <- function(x) var(x) * (length(x) - 1) / length(x)
+sd.pop <- function(x) sqrt(var.pop(x))
+co.var <- function(x) sd.pop(x)/mean(x)
+```
+
+# Calcul des valeurs pour le résumé univariés {.label:s-intro}
+
+## Variable : Price
+
+### Résumé Statistique
+
+```{r, }
+jeu_price <- jeu_data$Price # Tout les prix
+
+table_price<- table(jeu_price) # Les fréquences des prix 
+
+mode_price <- as.numeric(names(table_price)[which.max(table_price)])
+variance_price <- var.pop(jeu_price)
+ecart_type_price <- sd.pop(jeu_price)
+co_price <- co.var(jeu_price)
+skewness_price <-skewness(jeu_price)
+kurtosis_price <-kurtosis(jeu_price)
+
+
+table_price<- table(jeu_price)
+
+summary_price <-summary(jeu_price)
+
+#Utilisation de chat gpt pour le Kable
+
+# Extraction des valeurs pertinentes
+mean_value <- summary_price["Mean"]
+median_value <- summary_price["Median"]
+q1_value <- summary_price["1st Qu."]
+q3_value <- summary_price["3rd Qu."]
+min_value <- summary_price["Min."]
+max_value <- summary_price["Max."]
+
+summary_df <- data.frame(statistique = c("Mean", "Median", "1st Qu.", "3rd Qu.", "Min.", "Max.", "Mode", "Variance", "Ecart-type", "Coefficient de variation", "Skewness", "Kurtosis"),
+                         valeur = c(mean_value, median_value, q1_value, q3_value, min_value, max_value, mode_price, variance_price, ecart_type_price, co_price, skewness_price, kurtosis_price),
+                         stringsAsFactors = FALSE)
+
+
+
+kable(summary_df, caption = "Résumé statistique des valeurs", row.names = FALSE, digits = 2, 
+      col.names = c("Statistique", "Valeur"), align = "c", 
+      format = "html", escape = TRUE, 
+      table.attr = "style='font-size:20px;'")
+```
+
+---
+title: "Fréquences 'Price'"
+output: 
+  html_document:
+    fig_width: 10
+    fig_height: 6
+---
+
+```{r}
+
+total_freq <- sum(table_price)
+
+pourcentages <- (table_price / total_freq) * 100
+
+#Utilisation 
+
+barplot(pourcentages, main = "Histogramme des pourcentages", xlab = "Pourcentage", ylab = "Fréquence", ylim = c(0, 100))
+
+
+```
+
+\*\* Les \## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
