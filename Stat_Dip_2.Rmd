@@ -265,3 +265,51 @@ ggplot(donneesMMscAvgnbr, aes(x = Month, y = Avg..Players, color = donneesMetacr
   theme_minimal() +   theme(axis.text.x = element_blank(), plot.title = element_text(size = 9))
 ```
 
+
+---
+title: "Moyenne des pics du nombre de joueurs par catégorie de jeu"
+output: 
+  html_document:
+    fig_width: 10
+    fig_height: 6
+---
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+jeux_price_inf20 <- jeu_data %>% filter(Price <= 20 & Price>0)
+jeux_gratuits <- jeu_data %>% filter(Price==0)
+jeux_Price_sup20 <- jeu_data %>% filter(Price>20)
+
+moyenne_peak_players_gratuits <- statistique_data %>%
+  filter(AppID %in% jeux_gratuits$AppID) %>%
+  summarise(moyenne = mean(Peak.Players)) %>%
+  pull(moyenne)
+
+moyenne_peak_players_inf20 <- statistique_data %>%
+  filter(AppID %in% jeux_price_inf20$AppID) %>%
+  summarise(moyenne = mean(Peak.Players)) %>%
+  pull(moyenne)
+
+moyenne_peak_players_sup20 <- statistique_data %>%
+  filter(AppID %in% jeux_Price_sup20$AppID) %>%
+  summarise(moyenne = mean(Peak.Players)) %>%
+  pull(moyenne)
+
+moyennes_peak_players <- data.frame(
+  categorie = c("Gratuits", "Payants moins de 20$", "Payants plus de 20$"),
+  moyenne = c(moyenne_peak_players_gratuits, moyenne_peak_players_inf20, moyenne_peak_players_sup20)
+)
+
+ggplot(data = moyennes_peak_players, aes(x = categorie, y = moyenne)) +
+  geom_bar(stat = "identity", fill = "blue", width = 0.7) +
+  theme_minimal() +
+  labs(title = "Moyenne des pics du nombre de joueurs par catégorie de jeu",
+       x = "Catégories de jeux",
+       y = "Moyenne de Peak.Players") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  scale_y_continuous(limits = c(0, 40000))
+
+
+```
