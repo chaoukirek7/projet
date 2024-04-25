@@ -1,0 +1,241 @@
+---
+title: "Fichier Rmarkdown"
+output: 
+  pdf_document:
+---
+
+```         
+-- Partie pour utiliser la base de données 
+con <- DBI::dbConnect(
+  drv = RMySQL::MySQL(),
+  host = "localhost", 
+  port = 3306, 
+  username = "root", 
+  password = "", 
+  dbname = "projet"# nom de votre base
+  
+)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(DBI)
+library(RMySQL)
+library(moments)
+library(knitr)
+library(magrittr)
+
+
+jeu_data <- read.table("games_clean.csv",sep=";",header=TRUE) 
+statistique_data <- read.table("steam_charts_clean.csv",sep=";",header=TRUE) 
+
+# Fonctions 
+var.pop <- function(x) var(x) * (length(x) - 1) / length(x)
+sd.pop <- function(x) sqrt(var.pop(x))
+co.var <- function(x) sd.pop(x)/mean(x)
+```
+
+# Calcul des valeurs pour le résumé univariés {.label:s-intro}
+
+---
+title: " Résumé Statistique pour la variable Price "
+output: html_document
+---
+
+```{r}
+library(knitr)
+
+# Données
+jeu_price <- jeu_data$Price
+
+# Calcul des statistiques
+table_price <- table(jeu_price)
+
+mode_price <- names(which.max(table_price))
+variance_price <- round(var.pop(jeu_price), 3)
+ecart_type_price <- round(sd.pop(jeu_price), 3)
+co_price <- round(co.var(jeu_price), 3)
+skewness_price <- round(skewness(jeu_price), 3)
+kurtosis_price <- round(kurtosis(jeu_price), 3)
+summary_price <- summary(jeu_price)
+
+
+#Utilisation de Chat gpt pour la création du kable
+
+# Extraction des valeurs pertinentes
+mean_value <- round(summary_price["Mean"], 3)
+median_value <- round(summary_price["Median"], 3)
+q1_value <- round(summary_price["1st Qu."], 3)
+q3_value <- round(summary_price["3rd Qu."], 3)
+min_value <- round(summary_price["Min."], 3)
+max_value <- round(summary_price["Max."], 3)
+
+
+# Création du dataframe
+result_df_ <- data.frame(Statistique = c("Mean", "Median", "1st Qu.", "3rd Qu.", "Min.", "Max.", "Mode", "Variance", "Ecart-type", "Coefficient de variation", "Skewness", "Kurtosis"),
+  Valeur = c(mean_value, median_value, q1_value, q3_value, min_value, max_value, mode_price, variance_price, ecart_type_price, co_price, skewness_price, kurtosis_price)
+)
+
+# Affichage du tableau
+kable(result_df_, caption = "Résumé des statistiques des prix des jeux")
+
+```
+
+---
+title: "Fréquences 'Price'"
+output: 
+  html_document:
+    fig_width: 10
+    fig_height: 6
+---
+
+```{r}
+# Utilisation de Chat gtp pour ce chunk
+
+total_freq <- sum(table_price)
+pourcentages <- (table_price / total_freq) * 100
+
+barplot(pourcentages, main = "Histogramme des Fréquences en %", xlab = "Prix", ylab = "Fréquence en %", ylim = c(0, 100))
+
+
+```
+
+---
+title: " Résumé Statistique pour la variable Métacritic Score "
+output: html_document
+---
+
+```{r}
+library(knitr)
+
+# Données
+jeu_Metacritic <- jeu_data$Metacritic.score
+
+
+# Calcul des statistiques
+table_Metacritic <- table(jeu_Metacritic)
+
+mode_Metacritic<-names(which.max(table_Metacritic))
+
+variance_Metacritic <- round(var.pop(jeu_Metacritic), 3)
+ecart_type_Metacritic <- round(sd.pop(jeu_Metacritic), 3)
+co_Metacritic <- round(co.var(jeu_Metacritic), 3)
+skewness_Metacritic <- round(skewness(jeu_Metacritic), 3)
+kurtosis_Metacritic <- round(kurtosis(jeu_Metacritic), 3)
+summary_Metacritic <- summary(jeu_Metacritic)
+
+
+#Utilisation de Chat gpt pour la création du kable
+
+# Extraction des valeurs pertinentes
+mean_value <- round(summary_Metacritic["Mean"], 3)
+median_value <- round(summary_Metacritic["Median"], 3)
+q1_value <- round(summary_Metacritic["1st Qu."], 3)
+q3_value <- round(summary_Metacritic["3rd Qu."], 3)
+min_value <- round(summary_Metacritic["Min."], 3)
+max_value <- round(summary_Metacritic["Max."], 3)
+
+
+# Création du dataframe
+result_df_metacritic <- data.frame(
+  Statistique = c("Mean", "Median", "1st Qu.", "3rd Qu.", "Min.", "Max.", "Mode", "Variance", "Ecart-type", "Coefficient de variation", "Skewness", "Kurtosis"),
+  Valeur = c(mean_value, median_value, q1_value, q3_value, min_value, max_value, mode_Metacritic, variance_Metacritic, ecart_type_Metacritic, co_Metacritic, skewness_Metacritic, kurtosis_Metacritic)
+)
+
+# Affichage du tableau
+kable(result_df_metacritic, caption = "Résumé Statistique pour la variable Métacritic Score")
+
+```
+
+---
+title: "Fréquences Metacritic Score"
+output: 
+  html_document:
+    fig_width: 10
+    fig_height: 6
+---
+
+```{r,}
+# Utilisation de Chat gtp pour ce chunk
+
+total_freq <- sum(table_Metacritic)
+pourcentages <- (table_Metacritic / total_freq) * 100
+
+barplot(pourcentages, main = "Histogramme des Fréquences en %", xlab = "Prix", ylab = "Fréquence en %", ylim = c(0, 100))
+
+
+```
+
+---
+title: " Résumé Statistique pour la variable Gain "
+output: html_document
+---
+
+# La variable gain est la difference de joueur entre 2 mois, donc on va faire la moyenne des gains pour chaque jeu
+
+```{r}
+library(knitr)
+#Utilisation de Chat gpt pour tout le Chunk
+
+# Données
+statistique_data_gain <- statistique_data$Gain
+# Calculer la moyenne des gains pour chaque AppID et arrondir à l'unité la plus proche
+moyenne_gains <- aggregate(Gain ~ AppID, data = statistique_data, FUN = function(x) round(mean(x)))
+moy_gains <- moyenne_gains$Gain
+
+
+
+# Calcul des statistiques
+table_moy_gains <- table(moy_gains)
+
+mode_moy_gains<-names(which.max(table_moy_gains))
+
+variance_moy_gains <- round(var.pop(moy_gains), 3)
+ecart_type_moy_gains <- round(sd.pop(moy_gains), 3)
+co_moy_gains <- round(co.var(moy_gains), 3)
+skewness_moy_gains <- round(skewness(moy_gains), 3)
+kurtosis_moy_gains <- round(kurtosis(moy_gains), 3)
+summary_moy_gains <- summary(moy_gains)
+
+
+
+# Extraction des valeurs pertinentes
+mean_value <- round(summary_moy_gains["Mean"], 3)
+median_value <- round(summary_moy_gains["Median"], 3)
+q1_value <- round(summary_moy_gains["1st Qu."], 3)
+q3_value <- round(summary_moy_gains["3rd Qu."], 3)
+min_value <- round(summary_moy_gains["Min."], 3)
+max_value <- round(summary_moy_gains["Max."], 3)
+
+
+# Création du dataframe
+result_df_gain <- data.frame(
+  Statistique = c("Mean", "Median", "1st Qu.", "3rd Qu.", "Min.", "Max.", "Mode", "Variance", "Ecart-type", "Coefficient de variation", "Skewness", "Kurtosis"),
+  Valeur = c(mean_value, median_value, q1_value, q3_value, min_value, max_value, mode_moy_gains, variance_moy_gains, ecart_type_moy_gains, co_Metacritic, skewness_moy_gains, kurtosis_moy_gains)
+)
+
+# Affichage du tableau
+kable(result_df_gain, caption = "Résumé Statistique pour la variable Gains")
+
+```
+
+---
+title: "Fréquences Gains"
+output: 
+  html_document:
+    fig_width: 10
+    fig_height: 6
+---
+
+```{r,}
+# Cette histograme n'a pas d'interet 
+# Utilisation de Chat gtp pour ce chunk
+
+total_freq <- sum(table_moy_gains)
+pourcentages <- (table_moy_gains / total_freq) * 100
+
+barplot(pourcentages, main = "Histogramme des Fréquences en %", xlab = "Prix", ylab = "Fréquence en %", ylim = c(0, 100))
+
+
+```
