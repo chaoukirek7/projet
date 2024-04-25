@@ -239,3 +239,29 @@ barplot(pourcentages, main = "Histogramme des Fréquences en %", xlab = "Prix", 
 
 
 ```
+
+---
+title: "Nombre moyen des joueurs par mois par jeu et les scores de presse attribués aux jeux"
+output: 
+  html_document:
+    fig_width: 10
+    fig_height: 6
+---
+
+```{r}
+install.packages("ggplot2")
+library(ggplot2)
+
+
+donneesMMscAvgnbr <- merge(statistique_data, jeu_data, by = "AppID")
+
+donneesMetacriticScore_groupees <- cut(donneesMMscAvgnbr$Metacritic.score, breaks = c(-Inf, 50, 75, 90, Inf), labels = c("<=50", "50-75", "75-90", ">90"))
+
+
+ggplot(donneesMMscAvgnbr, aes(x = Month, y = Avg..Players, color = donneesMetacriticScore_groupees)) +
+  geom_point() +
+  labs(x = "Mois", y = "Nombre moyen de joueurs" , title = "Nuage de points représentant le nombre moyen des joueurs par mois par jeu et les scores Metacritic attribués au jeux"
+, color = "Score Metacritic") +
+  theme_minimal() +   theme(axis.text.x = element_blank(), plot.title = element_text(size = 9))
+```
+
