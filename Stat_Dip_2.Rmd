@@ -298,10 +298,8 @@ moyenne_peak_players_sup20 <- statistique_data %>%
   summarise(moyenne = mean(Peak.Players)) %>%
   pull(moyenne)
 
-moyennes_peak_players <- data.frame(
-  categorie = c("Gratuits", "Payants moins de 20$", "Payants plus de 20$"),
-  moyenne = c(moyenne_peak_players_gratuits, moyenne_peak_players_inf20, moyenne_peak_players_sup20)
-)
+moyennes_peak_players <- data.frame( categorie = c("Gratuits", "Payants moins de 20$", "Payants plus de 20$"),
+  moyenne = c(moyenne_peak_players_gratuits, moyenne_peak_players_inf20, moyenne_peak_players_sup20))
 
 ggplot(data = moyennes_peak_players, aes(x = categorie, y = moyenne)) +
   geom_bar(stat = "identity", fill = "blue", width = 0.7) +
